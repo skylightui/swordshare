@@ -1,48 +1,120 @@
 package org.skylightui.swordshare.util;
 
+import android.util.Log;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.logging.XMLFormatter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class SimpleSWORDDeposit {
 
-    public SimpleSWORDDeposit(String url, String user, String password,
-                              String filename, String mime, Hashtable<String, String> metadata,
-                              String metsfilename, FileOutputStream fosmets,
-                              String zipfilename, FileOutputStream foszip)
-                              throws Exception {
+    /** The XML atom entry response */
+    private String xml;
+
+    /** The debugging tag */
+    private static final String TAG = "org.skylightui.swordshare.util.SimpleSWORDDeposit";
+
+
+    public SimpleSWORDDeposit(String filename, String mime, Hashtable<String, String> metadata, FileOutputStream fosmets) throws Exception {
         // First, compile the mets.xml, then save it temporarily
         String mets = makeMets(filename.substring(filename.lastIndexOf('/') + 1), mime, metadata);
         System.out.println(mets);
         fosmets.write(mets.getBytes());
         fosmets.close();
+    }
 
+    public void makePackage(InputStream thePackage, String filename, FileOutputStream foszip, FileInputStream fismets) throws Exception {
         // Now make the package
-        String[] filenames = new String[]{metsfilename, filename};
+        Log.d(TAG, "Opening zip file for writing");
         ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(foszip));
         byte data[] = new byte[2048];
         BufferedInputStream origin;
-        for (String fname : filenames) {
-            System.out.println("Adding: " + fname + " as " + fname.substring(fname.lastIndexOf('/') + 1));
-            FileInputStream fi = new FileInputStream(fname);
-            origin = new BufferedInputStream(fi, 2048);
-            ZipEntry entry = new ZipEntry(fname.substring(fname.lastIndexOf('/') + 1));
-            zip.putNextEntry(entry);
-            int count;
-            while((count = origin.read(data, 0, 2048)) != -1) {
-               zip.write(data, 0, count);
-            }
-            origin.close();
-         }
+
+        Log.d(TAG, "Adding mets.xml to zip file");
+        origin = new BufferedInputStream(fismets, 2048);
+        ZipEntry entry = new ZipEntry("mets.xml");
+        zip.putNextEntry(entry);
+        int count2;
+        while((count2 = origin.read(data, 0, 2048)) != -1) {
+           zip.write(data, 0, count2);
+        }
+        origin.close();
+
+        Log.d(TAG, "Adding content file to zip file");
+        origin = new BufferedInputStream(thePackage, 2048);
+        ZipEntry entry2 = new ZipEntry(filename.substring(filename.lastIndexOf('/') + 1));
+        zip.putNextEntry(entry2);
+        int count;
+        while((count = origin.read(data, 0, 2048)) != -1) {
+           zip.write(data, 0, count);
+        }
+        origin.close();
+
+        Log.d(TAG, "Closing zip file");
         zip.close();
+    }
 
-        // Next deposit the package
-        this.upload(zipfilename, url, user, password);
+    public boolean deposit(InputStream fis, String theUrl, String username, String password) throws Exception {
+        // Setup the http connection
+        int bytesRead, bytesAvailable, bufferSize;
+        byte[] buffer;
+        int maxBufferSize = 1024 * 1024;
+        URL url = new URL(theUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        conn.setUseCaches(false);
 
-        // Finally get the response
+        // Set the authentication headers
+        String encodedAuthorization = Base64.encodeBytes((username + ":" + password).getBytes());
+        conn.setRequestProperty("Authorization", "Basic " + encodedAuthorization);
+
+        // Set the http headers
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("Content-Type", "application/zip");
+        conn.setRequestProperty("X-Packaging", "http://purl.org/net/sword-types/METSDSpaceSIP");
+
+        // Send the file
+        DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+        bytesAvailable = fis.available();
+        bufferSize = Math.min(bytesAvailable, maxBufferSize);
+        buffer = new byte[bufferSize];
+        bytesRead = fis.read(buffer, 0, bufferSize);
+        while (bytesRead > 0) {
+            dos.write(buffer, 0, bufferSize);
+            bytesAvailable = fis.available();
+            bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            bytesRead = fis.read(buffer, 0, bufferSize);
+        }
+
+        // Get the response from the server
+        int serverResponseCode = conn.getResponseCode();
+        fis.close();
+        dos.flush();
+        dos.close();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String line;
+        String atom = "";
+        while ((line = rd.readLine()) != null) {
+            atom += line + "\n";
+        }
+        rd.close();
+
+        xml = atom;
+
+        // Return whether it completed OK or not
+        return ((serverResponseCode >= 200) && (serverResponseCode < 300));
+    }
+
+    public String getURL() {
+        String id = xml.substring(xml.indexOf("<atom:id>") + 9);
+        id = id.substring(0, id.indexOf('<'));
+        return id;
     }
 
     private String makeMets(String filename, String mime, Hashtable<String, String> metadata) {
@@ -142,60 +214,6 @@ public class SimpleSWORDDeposit {
         return mets.toString();
     }
 
-    private boolean upload(String source, String theUrl, String username, String password) throws Exception {
-        // Setup the http connection
-        int bytesRead, bytesAvailable, bufferSize;
-        byte[] buffer;
-        int maxBufferSize = 1024 * 1024;
-        File sourceFile = new File(source);
-        FileInputStream fileInputStream = new FileInputStream(sourceFile);
-        URL url = new URL(theUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setDoInput(true);
-        conn.setDoOutput(true);
-        conn.setUseCaches(false);
-
-        // Set the authentication headers
-        String encodedAuthorization = Base64.encodeBytes((username + ":" + password).getBytes());
-        conn.setRequestProperty("Authorization", "Basic " + encodedAuthorization);
-
-        // Set the http headers
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Content-Type", "application/zip");
-        conn.setRequestProperty("X-Packaging", "http://purl.org/net/sword-types/METSDSpaceSIP");
-
-        // Send the file
-        DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-        bytesAvailable = fileInputStream.available();
-        bufferSize = Math.min(bytesAvailable, maxBufferSize);
-        buffer = new byte[bufferSize];
-        bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-        while (bytesRead > 0) {
-            dos.write(buffer, 0, bufferSize);
-            bytesAvailable = fileInputStream.available();
-            bufferSize = Math.min(bytesAvailable, maxBufferSize);
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-        }
-
-        // Get the response from the server
-        int serverResponseCode = conn.getResponseCode();
-        fileInputStream.close();
-        dos.flush();
-        dos.close();
-        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line;
-        String atom = "";
-        while ((line = rd.readLine()) != null) {
-            atom += line + "\n";
-        }
-        System.out.println(atom);
-        rd.close();
-
-        // Return whether it completed OK or not
-        return ((serverResponseCode >= 200) && (serverResponseCode < 300));
-    }
-
     public static void main(String[] args) throws Exception {
         Hashtable<String, String> metadata = new Hashtable<String, String>();
         metadata.put("creator", "Lewis, Stuart");
@@ -207,10 +225,14 @@ public class SimpleSWORDDeposit {
         FileOutputStream fosmets = new FileOutputStream(new File(metsfilename));
         FileOutputStream foszip = new FileOutputStream(new File(zipfilename));
 
-        SimpleSWORDDeposit deposit = new SimpleSWORDDeposit("http://localhost:8080/sword/deposit/123456789/766",
-                                                            "stuart@stuartlewis.com", "qwertyuiop",
-                                                            "/Library/WebServer/Documents/swordappv2-php-library/test/test-files/mets_swap/SWORD Ariadne Jan 2008.pdf",
-                                                            "application/pdf", metadata, metsfilename, fosmets,
-                                                            zipfilename, foszip);
+        String filename = "/Library/WebServer/Documents/swordappv2-php-library/test/test-files/mets_swap/SWORD Ariadne Jan 2008.pdf";
+
+        SimpleSWORDDeposit deposit = new SimpleSWORDDeposit(filename, "application/pdf", metadata, fosmets);
+
+        FileInputStream fismets = new FileInputStream(metsfilename);
+        FileInputStream thePackage = new FileInputStream(new File(filename));
+        deposit.makePackage(thePackage, filename, foszip, fismets);
+        FileInputStream fospackage = new FileInputStream(new File(zipfilename));
+        deposit.deposit(fospackage, "http://192.168.2.247:8080/sword/deposit/123456789/766", "sword@swordapp.org", "sword");
     }
 }
