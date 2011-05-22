@@ -3,7 +3,6 @@ package org.skylightui.swordshare.util;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -25,7 +24,7 @@ public class SimpleSWORDDeposit {
         String[] filenames = new String[]{metsfilename, filename};
         ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(foszip));
         byte data[] = new byte[2048];
-        BufferedInputStream origin = null;
+        BufferedInputStream origin;
         for (String fname : filenames) {
             System.out.println("Adding: " + fname + " as " + fname.substring(fname.lastIndexOf('/') + 1));
             FileInputStream fi = new FileInputStream(fname);
@@ -48,112 +47,110 @@ public class SimpleSWORDDeposit {
 
     private String makeMets(String filename, String mime, Hashtable<String, String> metadata) {
         StringBuilder mets = new StringBuilder();
-        mets.append("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n");
-        mets.append("<mets ID=\"sort-mets_mets\" OBJID=\"sword-mets\" LABEL=\"DSpace SWORD Item\"\n");
-        mets.append("    PROFILE=\"DSpace METS SIP Profile 1.0\" xmlns=\"http://www.loc.gov/METS/\"\n");
-        mets.append("    xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n");
-        mets.append("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-        mets.append("    xsi:schemaLocation=\"http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd\">\n");
-        mets.append("\n");
-        mets.append("    <metsHdr CREATEDATE=\"2008-09-04T00:00:00\">\n");
-        mets.append("        <agent ROLE=\"CUSTODIAN\" TYPE=\"ORGANIZATION\">\n");
-        mets.append("            <name>" + metadata.get("creator") + "</name>\n");
-        mets.append("        </agent>\n");
-        mets.append("    </metsHdr>\n");
-	    mets.append("\n");
-        mets.append("    <dmdSec ID=\"sword-mets-dmd-1\" GROUPID=\"sword-mets-dmd-1_group-1\">\n");
-        mets.append("        <mdWrap LABEL=\"SWAP Metadata\" MDTYPE=\"OTHER\" OTHERMDTYPE=\"EPDCX\"\n");
-        mets.append("            MIMETYPE=\"text/xml\">\n");
-        mets.append("\n");
-        mets.append("            <xmlData>\n");
-        mets.append("                <epdcx:descriptionSet\n");
-        mets.append("                    xmlns:epdcx=\"http://purl.org/eprint/epdcx/2006-11-16/\"\n");
-        mets.append("                    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-        mets.append("                    xsi:schemaLocation=\"http://purl.org/eprint/epdcx/2006-11-16 http://purl.org/eprint/epdcx/xsd/2006-11-16/epdcx.xsd\">\n");
-        mets.append("\n");
-        mets.append("                    <epdcx:description\n");
-        mets.append("                        epdcx:resourceId=\"sword-mets-epdcx-1\">\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/type\"\n");
-        mets.append("                            epdcx:valueURI=\"http://purl.org/eprint/entityType/ScholarlyWork\" />\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/title\">\n");
-        mets.append("                            <epdcx:valueString>" + metadata.get("title") + "</epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/terms/abstract\">\n");
-        mets.append("                            <epdcx:valueString>" + metadata.get("description") + "</epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/creator\">\n");
-        mets.append("                            <epdcx:valueString>" + metadata.get("creator") + "</epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/eprint/terms/isExpressedAs\"\n");
-        mets.append("                            epdcx:valueRef=\"sword-mets-expr-1\" />\n");
-        mets.append("                    </epdcx:description>\n");
-        mets.append("\n");
-        mets.append("                    <epdcx:description\n");
-        mets.append("                        epdcx:resourceId=\"sword-mets-expr-1\">\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/type\"\n");
-        mets.append("                            epdcx:valueURI=\"http://purl.org/eprint/entityType/Expression\" />\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/language\"\n");
-        mets.append("                            epdcx:vesURI=\"http://purl.org/dc/terms/RFC3066\">\n");
-        mets.append("                            <epdcx:valueString>en</epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/type\"\n");
-        mets.append("                            epdcx:vesURI=\"http://purl.org/eprint/terms/Type\"\n");
-        mets.append("                            epdcx:valueURI=\"http://purl.org/eprint/type/JournalArticle\" />\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/terms/available\">\n");
-        mets.append("                            <epdcx:valueString\n");
-        mets.append("                                epdcx:sesURI=\"http://purl.org/dc/terms/W3CDTF\">\n");
-        mets.append("                                2008-01\n");
-        mets.append("                            </epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                    </epdcx:description>\n");
-        mets.append("                </epdcx:descriptionSet>\n");
-        mets.append("            </xmlData>\n");
-        mets.append("        </mdWrap>\n");
-        mets.append("    </dmdSec>\n");
-        mets.append("\n");
-        mets.append("    <fileSec>\n");
-        mets.append("        <fileGrp ID=\"sword-mets-fgrp-1\" USE=\"CONTENT\">\n");
-        mets.append("            <file GROUPID=\"sword-mets-fgid-0\" ID=\"sword-mets-file-1\"\n");
-        mets.append("                MIMETYPE=\"" + mime + "\">\n");
-        mets.append("                <FLocat LOCTYPE=\"URL\" xlink:href=\"" + filename + "\" />\n");
-        mets.append("            </file>\n");
-        mets.append("        </fileGrp>\n");
-        mets.append("    </fileSec>\n");
-	    mets.append("\n");
-        mets.append("    <structMap ID=\"sword-mets-struct-1\" LABEL=\"structure\"\n");
-        mets.append("        TYPE=\"LOGICAL\">\n");
-        mets.append("        <div ID=\"sword-mets-div-1\" DMDID=\"sword-mets-dmd-1\" TYPE=\"SWORD Object\">\n");
-        mets.append("            <div ID=\"sword-mets-div-2\" TYPE=\"File\">\n");
-        mets.append("                <fptr FILEID=\"sword-mets-file-1\" />\n");
-        mets.append("            </div>\n");
-        mets.append("        </div>\n");
-        mets.append("    </structMap>\n");
-        mets.append("\n");
-        mets.append("</mets>\n");
+        mets.append("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n")
+        .append("<mets ID=\"sort-mets_mets\" OBJID=\"sword-mets\" LABEL=\"DSpace SWORD Item\"\n")
+        .append("    PROFILE=\"DSpace METS SIP Profile 1.0\" xmlns=\"http://www.loc.gov/METS/\"\n")
+        .append("    xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n")
+        .append("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
+        .append("    xsi:schemaLocation=\"http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd\">\n")
+        .append("\n")
+        .append("    <metsHdr CREATEDATE=\"2008-09-04T00:00:00\">\n")
+        .append("        <agent ROLE=\"CUSTODIAN\" TYPE=\"ORGANIZATION\">\n")
+        .append("            <name>").append(metadata.get("creator")).append("</name>\n")
+        .append("        </agent>\n")
+        .append("    </metsHdr>\n")
+	    .append("\n")
+        .append("    <dmdSec ID=\"sword-mets-dmd-1\" GROUPID=\"sword-mets-dmd-1_group-1\">\n")
+        .append("        <mdWrap LABEL=\"SWAP Metadata\" MDTYPE=\"OTHER\" OTHERMDTYPE=\"EPDCX\"\n")
+        .append("            MIMETYPE=\"text/xml\">\n")
+        .append("\n")
+        .append("            <xmlData>\n")
+        .append("                <epdcx:descriptionSet\n")
+        .append("                    xmlns:epdcx=\"http://purl.org/eprint/epdcx/2006-11-16/\"\n")
+        .append("                    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
+        .append("                    xsi:schemaLocation=\"http://purl.org/eprint/epdcx/2006-11-16 http://purl.org/eprint/epdcx/xsd/2006-11-16/epdcx.xsd\">\n")
+        .append("\n")
+        .append("                    <epdcx:description\n")
+        .append("                        epdcx:resourceId=\"sword-mets-epdcx-1\">\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/type\"\n")
+        .append("                            epdcx:valueURI=\"http://purl.org/eprint/entityType/ScholarlyWork\" />\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/title\">\n")
+        .append("                            <epdcx:valueString>").append(metadata.get("title")).append("</epdcx:valueString>\n")
+        .append("                        </epdcx:statement>\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/terms/abstract\">\n")
+        .append("                            <epdcx:valueString>").append(metadata.get("description")).append("</epdcx:valueString>\n")
+        .append("                        </epdcx:statement>\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/creator\">\n")
+        .append("                            <epdcx:valueString>").append(metadata.get("creator")).append("</epdcx:valueString>\n")
+        .append("                        </epdcx:statement>\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/eprint/terms/isExpressedAs\"\n")
+        .append("                            epdcx:valueRef=\"sword-mets-expr-1\" />\n")
+        .append("                    </epdcx:description>\n")
+        .append("\n")
+        .append("                    <epdcx:description\n")
+        .append("                        epdcx:resourceId=\"sword-mets-expr-1\">\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/type\"\n")
+        .append("                            epdcx:valueURI=\"http://purl.org/eprint/entityType/Expression\" />\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/language\"\n")
+        .append("                            epdcx:vesURI=\"http://purl.org/dc/terms/RFC3066\">\n")
+        .append("                            <epdcx:valueString>en</epdcx:valueString>\n")
+        .append("                        </epdcx:statement>\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/type\"\n")
+        .append("                            epdcx:vesURI=\"http://purl.org/eprint/terms/Type\"\n")
+        .append("                            epdcx:valueURI=\"http://purl.org/eprint/type/JournalArticle\" />\n")
+        .append("                        <epdcx:statement\n")
+        .append("                            epdcx:propertyURI=\"http://purl.org/dc/terms/available\">\n")
+        .append("                            <epdcx:valueString\n")
+        .append("                                epdcx:sesURI=\"http://purl.org/dc/terms/W3CDTF\">\n")
+        .append("                                2008-01\n")
+        .append("                            </epdcx:valueString>\n")
+        .append("                        </epdcx:statement>\n")
+        .append("                    </epdcx:description>\n")
+        .append("                </epdcx:descriptionSet>\n")
+        .append("            </xmlData>\n")
+        .append("        </mdWrap>\n")
+        .append("    </dmdSec>\n")
+        .append("\n")
+        .append("    <fileSec>\n")
+        .append("        <fileGrp ID=\"sword-mets-fgrp-1\" USE=\"CONTENT\">\n")
+        .append("            <file GROUPID=\"sword-mets-fgid-0\" ID=\"sword-mets-file-1\"\n")
+        .append("                MIMETYPE=\"").append(mime).append("\">\n")
+        .append("                <FLocat LOCTYPE=\"URL\" xlink:href=\"").append(filename).append("\" />\n")
+        .append("            </file>\n")
+        .append("        </fileGrp>\n")
+        .append("    </fileSec>\n")
+	    .append("\n")
+        .append("    <structMap ID=\"sword-mets-struct-1\" LABEL=\"structure\"\n")
+        .append("        TYPE=\"LOGICAL\">\n")
+        .append("        <div ID=\"sword-mets-div-1\" DMDID=\"sword-mets-dmd-1\" TYPE=\"SWORD Object\">\n")
+        .append("            <div ID=\"sword-mets-div-2\" TYPE=\"File\">\n")
+        .append("                <fptr FILEID=\"sword-mets-file-1\" />\n")
+        .append("            </div>\n")
+        .append("        </div>\n")
+        .append("    </structMap>\n")
+        .append("\n")
+        .append("</mets>\n");
 
         return mets.toString();
     }
 
     private boolean upload(String source, String theUrl, String username, String password) throws Exception {
         // Setup the http connection
-        HttpURLConnection conn = null;
-        DataOutputStream dos = null;
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
         int maxBufferSize = 1024 * 1024;
         File sourceFile = new File(source);
         FileInputStream fileInputStream = new FileInputStream(sourceFile);
         URL url = new URL(theUrl);
-        conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoInput(true);
         conn.setDoOutput(true);
         conn.setUseCaches(false);
@@ -169,7 +166,7 @@ public class SimpleSWORDDeposit {
         conn.setRequestProperty("X-Packaging", "http://purl.org/net/sword-types/METSDSpaceSIP");
 
         // Send the file
-        dos = new DataOutputStream(conn.getOutputStream());
+        DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
         bytesAvailable = fileInputStream.available();
         bufferSize = Math.min(bytesAvailable, maxBufferSize);
         buffer = new byte[bufferSize];
@@ -183,7 +180,6 @@ public class SimpleSWORDDeposit {
 
         // Get the response from the server
         int serverResponseCode = conn.getResponseCode();
-        String serverResponseMessage = conn.getResponseMessage();
         fileInputStream.close();
         dos.flush();
         dos.close();
@@ -197,10 +193,7 @@ public class SimpleSWORDDeposit {
         rd.close();
 
         // Return whether it completed OK or not
-        if ((serverResponseCode >= 200) && (serverResponseCode < 300)) {
-            return true;
-        }
-        return false;
+        return ((serverResponseCode >= 200) && (serverResponseCode < 300));
     }
 
     public static void main(String[] args) throws Exception {
@@ -215,7 +208,7 @@ public class SimpleSWORDDeposit {
         FileOutputStream foszip = new FileOutputStream(new File(zipfilename));
 
         SimpleSWORDDeposit deposit = new SimpleSWORDDeposit("http://localhost:8080/sword/deposit/123456789/766",
-                                                            "stuart@stuartlewis.com", "123456",
+                                                            "stuart@stuartlewis.com", "qwertyuiop",
                                                             "/Library/WebServer/Documents/swordappv2-php-library/test/test-files/mets_swap/SWORD Ariadne Jan 2008.pdf",
                                                             "application/pdf", metadata, metsfilename, fosmets,
                                                             zipfilename, foszip);
