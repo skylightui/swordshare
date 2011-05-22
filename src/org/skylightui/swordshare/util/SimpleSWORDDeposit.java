@@ -1,6 +1,11 @@
 package org.skylightui.swordshare.util;
 
+import org.apache.http.client.HttpClient;
+
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.zip.ZipEntry;
@@ -10,7 +15,8 @@ public class SimpleSWORDDeposit {
 
     public SimpleSWORDDeposit(String url, String user, String password,
                               String filename, String mime, Hashtable<String, ArrayList<String>> metadata,
-                              String metsfilename, FileOutputStream fosmets, FileOutputStream foszip)
+                              String metsfilename, FileOutputStream fosmets,
+                              String zipfilename, FileOutputStream foszip)
                               throws Exception {
         // First, compile the mets.xml, then save it temporarily
         String mets = makeMets(filename.substring(filename.lastIndexOf('/') + 1), mime, metadata);
@@ -38,7 +44,7 @@ public class SimpleSWORDDeposit {
         zip.close();
 
         // Next deposit the package
-
+        this.upload(zipfilename, url, user, password);
 
         // Finally get the response
     }
@@ -66,7 +72,7 @@ public class SimpleSWORDDeposit {
         mets.append("                <epdcx:descriptionSet\n");
         mets.append("                    xmlns:epdcx=\"http://purl.org/eprint/epdcx/2006-11-16/\"\n");
         mets.append("                    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-        mets.append("                    xsi:schemaLocation=\"http://purl.org/eprint/epdcx/2006-11-16\\n\");/ http://purl.org/eprint/epdcx/xsd/2006-11-16/epdcx.xsd\">\n");
+        mets.append("                    xsi:schemaLocation=\"http://purl.org/eprint/epdcx/2006-11-16 http://purl.org/eprint/epdcx/xsd/2006-11-16/epdcx.xsd\">\n");
         mets.append("\n");
         mets.append("                    <epdcx:description\n");
         mets.append("                        epdcx:resourceId=\"sword-mets-epdcx-1\">\n");
@@ -163,14 +169,70 @@ public class SimpleSWORDDeposit {
         return mets.toString();
     }
 
+    private void upload(String source, String theUrl, String username, String password) throws Exception {
+        // Setup the http connection
+        HttpURLConnection conn = null;
+        DataOutputStream dos = null;
+        int bytesRead, bytesAvailable, bufferSize;
+        byte[] buffer;
+        int maxBufferSize = 1024 * 1024;
+        File sourceFile = new File(source);
+        FileInputStream fileInputStream = new FileInputStream(sourceFile);
+        URL url = new URL(theUrl);
+        conn = (HttpURLConnection) url.openConnection();
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        conn.setUseCaches(false);
+
+        // Set the authentication headers
+        String encodedAuthorization = Base64.encodeBytes((username + ":" + password).getBytes());
+        conn.setRequestProperty("Authorization", "Basic " + encodedAuthorization);
+
+        // Set the http headers
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("Content-Type", "application/zip");
+        conn.setRequestProperty("X-Packaging", "http://purl.org/net/sword-types/METSDSpaceSIP");
+
+        // Send the file
+        dos = new DataOutputStream(conn.getOutputStream());
+        bytesAvailable = fileInputStream.available();
+        bufferSize = Math.min(bytesAvailable, maxBufferSize);
+        buffer = new byte[bufferSize];
+        bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+        while (bytesRead > 0) {
+            dos.write(buffer, 0, bufferSize);
+            bytesAvailable = fileInputStream.available();
+            bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+        }
+
+        // Get the response from the server
+        int serverResponseCode = conn.getResponseCode();
+        String serverResponseMessage = conn.getResponseMessage();
+        System.out.println("Upload file to server: HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
+        System.out.println("Upload file to server: " + source + " File is written");
+        fileInputStream.close();
+        dos.flush();
+        dos.close();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+            System.out.println("In: " + line);
+        }
+        rd.close();
+    }
+
     public static void main(String[] args) throws Exception {
         Hashtable<String, ArrayList<String>> metadata = new Hashtable<String, ArrayList<String>>();
         String metsfilename = "/Users/stuartlewis/Desktop/mets.xml";
+        String zipfilename = "/Users/stuartlewis/Desktop/package.xml";
         FileOutputStream fosmets = new FileOutputStream(new File(metsfilename));
-        FileOutputStream foszip = new FileOutputStream(new File("/Users/stuartlewis/Desktop/package.zip"));
+        FileOutputStream foszip = new FileOutputStream(new File(zipfilename));
         SimpleSWORDDeposit deposit = new SimpleSWORDDeposit("http://localhost:8080/sword/deposit/123456789/766",
-                                                            "stuart@stuartlewis.com", "fghsdlvdbflvbkdv",
+                                                            "stuart@stuartlewis.com", "123456",
                                                             "/Library/WebServer/Documents/swordappv2-php-library/test/test-files/mets_swap/SWORD Ariadne Jan 2008.pdf",
-                                                            "application/pdf", metadata, metsfilename, fosmets, foszip);
+                                                            "application/pdf", metadata, metsfilename, fosmets,
+                                                            zipfilename, foszip);
     }
 }
