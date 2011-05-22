@@ -1,10 +1,7 @@
 package org.skylightui.swordshare.util;
 
-import org.apache.http.client.HttpClient;
-
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -14,7 +11,7 @@ import java.util.zip.ZipOutputStream;
 public class SimpleSWORDDeposit {
 
     public SimpleSWORDDeposit(String url, String user, String password,
-                              String filename, String mime, Hashtable<String, ArrayList<String>> metadata,
+                              String filename, String mime, Hashtable<String, String> metadata,
                               String metsfilename, FileOutputStream fosmets,
                               String zipfilename, FileOutputStream foszip)
                               throws Exception {
@@ -49,7 +46,7 @@ public class SimpleSWORDDeposit {
         // Finally get the response
     }
 
-    private String makeMets(String filename, String mime, Hashtable<String, ArrayList<String>>metadata) {
+    private String makeMets(String filename, String mime, Hashtable<String, String> metadata) {
         StringBuilder mets = new StringBuilder();
         mets.append("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n");
         mets.append("<mets ID=\"sort-mets_mets\" OBJID=\"sword-mets\" LABEL=\"DSpace SWORD Item\"\n");
@@ -60,7 +57,7 @@ public class SimpleSWORDDeposit {
         mets.append("\n");
         mets.append("    <metsHdr CREATEDATE=\"2008-09-04T00:00:00\">\n");
         mets.append("        <agent ROLE=\"CUSTODIAN\" TYPE=\"ORGANIZATION\">\n");
-        mets.append("            <name>Stuart Lewis</name>\n");
+        mets.append("            <name>" + metadata.get("creator") + "</name>\n");
         mets.append("        </agent>\n");
         mets.append("    </metsHdr>\n");
 	    mets.append("\n");
@@ -81,28 +78,15 @@ public class SimpleSWORDDeposit {
         mets.append("                            epdcx:valueURI=\"http://purl.org/eprint/entityType/ScholarlyWork\" />\n");
         mets.append("                        <epdcx:statement\n");
         mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/title\">\n");
-        mets.append("                            <epdcx:valueString>\n");
-        mets.append("                                SWORD: Simple Web-service Offering Repository Deposit\n");
-        mets.append("                            </epdcx:valueString>\n");
+        mets.append("                            <epdcx:valueString>" + metadata.get("title") + "</epdcx:valueString>\n");
         mets.append("                        </epdcx:statement>\n");
         mets.append("                        <epdcx:statement\n");
         mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/terms/abstract\">\n");
-        mets.append("                            <epdcx:valueString>\n");
-        mets.append("                                Abstract\n");
-        mets.append("                            </epdcx:valueString>\n");
+        mets.append("                            <epdcx:valueString>" + metadata.get("description") + "</epdcx:valueString>\n");
         mets.append("                        </epdcx:statement>\n");
         mets.append("                        <epdcx:statement\n");
         mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/creator\">\n");
-        mets.append("                            <epdcx:valueString>\n");
-        mets.append("                                Allinson, Julie\n");
-        mets.append("                            </epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/dc/elements/1.1/identifier\">\n");
-        mets.append("                            <epdcx:valueString\n");
-        mets.append("                                epdcx:sesURI=\"http://purl.org/dc/terms/URI\">\n");
-        mets.append("                                http://www.ariadne.ac.uk/issue54/allinson-et-al/\n");
-        mets.append("                            </epdcx:valueString>\n");
+        mets.append("                            <epdcx:valueString>" + metadata.get("creator") + "</epdcx:valueString>\n");
         mets.append("                        </epdcx:statement>\n");
         mets.append("                        <epdcx:statement\n");
         mets.append("                            epdcx:propertyURI=\"http://purl.org/eprint/terms/isExpressedAs\"\n");
@@ -128,16 +112,6 @@ public class SimpleSWORDDeposit {
         mets.append("                            <epdcx:valueString\n");
         mets.append("                                epdcx:sesURI=\"http://purl.org/dc/terms/W3CDTF\">\n");
         mets.append("                                2008-01\n");
-        mets.append("                            </epdcx:valueString>\n");
-        mets.append("                        </epdcx:statement>\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/eprint/terms/Status\"\n");
-        mets.append("                            epdcx:vesURI=\"http://purl.org/eprint/terms/Status\"\n");
-        mets.append("                            epdcx:valueURI=\"http://purl.org/eprint/status/PeerReviewed\" />\n");
-        mets.append("                        <epdcx:statement\n");
-        mets.append("                            epdcx:propertyURI=\"http://purl.org/eprint/terms/copyrightHolder\">\n");
-        mets.append("                            <epdcx:valueString>\n");
-        mets.append("                                Julie Allinson, Sebastien François, Stuart Lewis\n");
         mets.append("                            </epdcx:valueString>\n");
         mets.append("                        </epdcx:statement>\n");
         mets.append("                    </epdcx:description>\n");
@@ -169,7 +143,7 @@ public class SimpleSWORDDeposit {
         return mets.toString();
     }
 
-    private void upload(String source, String theUrl, String username, String password) throws Exception {
+    private boolean upload(String source, String theUrl, String username, String password) throws Exception {
         // Setup the http connection
         HttpURLConnection conn = null;
         DataOutputStream dos = null;
@@ -210,25 +184,36 @@ public class SimpleSWORDDeposit {
         // Get the response from the server
         int serverResponseCode = conn.getResponseCode();
         String serverResponseMessage = conn.getResponseMessage();
-        System.out.println("Upload file to server: HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
-        System.out.println("Upload file to server: " + source + " File is written");
         fileInputStream.close();
         dos.flush();
         dos.close();
         BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         String line;
+        String atom = "";
         while ((line = rd.readLine()) != null) {
-            System.out.println("In: " + line);
+            atom += line + "\n";
         }
+        System.out.println(atom);
         rd.close();
+
+        // Return whether it completed OK or not
+        if ((serverResponseCode >= 200) && (serverResponseCode < 300)) {
+            return true;
+        }
+        return false;
     }
 
     public static void main(String[] args) throws Exception {
-        Hashtable<String, ArrayList<String>> metadata = new Hashtable<String, ArrayList<String>>();
+        Hashtable<String, String> metadata = new Hashtable<String, String>();
+        metadata.put("creator", "Lewis, Stuart");
+        metadata.put("title", "Test title");
+        metadata.put("description", "Test description");
+
         String metsfilename = "/Users/stuartlewis/Desktop/mets.xml";
         String zipfilename = "/Users/stuartlewis/Desktop/package.xml";
         FileOutputStream fosmets = new FileOutputStream(new File(metsfilename));
         FileOutputStream foszip = new FileOutputStream(new File(zipfilename));
+
         SimpleSWORDDeposit deposit = new SimpleSWORDDeposit("http://localhost:8080/sword/deposit/123456789/766",
                                                             "stuart@stuartlewis.com", "123456",
                                                             "/Library/WebServer/Documents/swordappv2-php-library/test/test-files/mets_swap/SWORD Ariadne Jan 2008.pdf",
