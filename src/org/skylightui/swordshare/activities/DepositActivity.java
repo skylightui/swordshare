@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import org.skylightui.swordshare.R;
 import org.skylightui.swordshare.util.SimpleSWORDDeposit;
 import org.skylightui.swordshare.util.StackTraceLogger;
@@ -58,7 +59,25 @@ public class DepositActivity extends Activity {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 try {
+                    // Get the context
                     Context context = getApplicationContext();
+
+                    // Check the boxes are filled in
+                    CharSequence text = "";
+                    if (("".equals(title.getText().toString().trim())) &&
+                        ("".equals(description.getText().toString().trim()))) {
+                        text = "Please complete the title and description!";
+                    } else if ("".equals(title.getText().toString().trim())) {
+                        text = "Please complete the title!";
+                    } else if ("".equals(description.getText().toString().trim())) {
+                        text = "Please complete the description!";
+                    }
+                    if (text.length() > 0) {
+                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
+                        toast.show();
+                        return;
+                    }
+
                     // Retrieve the Uri of the file being referenced
                     Uri uri = (Uri)i.getExtras().get(Intent.EXTRA_STREAM);
                     String filename = uri.toString().substring(uri.toString().indexOf(':') + 1);
