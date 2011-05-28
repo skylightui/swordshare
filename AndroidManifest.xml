@@ -25,5 +25,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.SetupActivity"/>
+
     </application>
 </manifest> 

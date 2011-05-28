@@ -7,26 +7,23 @@ import android.view.View;
 import android.widget.Button;
 import org.skylightui.swordshare.R;
 
-public class MainActivity extends Activity
-{
+public class SetupActivity extends Activity {
+
     private Activity thisActivity;
 
     /** The debugging tag */
-    private static final String TAG = "org.skylightui.swordshare.activities.MainActivity";
+    private static final String TAG = "org.skylightui.swordshare.activities.SetupActivity";
 
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.setup);
 
         thisActivity = this;
 
-        Button button = (Button)this.findViewById(R.id.setupbutton);
+        Button button = (Button)this.findViewById(R.id.donebutton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startActivity(new Intent(thisActivity, SetupActivity.class));
+                thisActivity.finish();
             }
         });
     }
