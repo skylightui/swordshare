@@ -24,5 +24,6 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+
     </application>
 </manifest> 
