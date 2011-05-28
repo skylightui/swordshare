@@ -31,7 +31,6 @@ public class DepositActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.describe);
-        String filename = "unknown";
         Uri uri = null;
 
         // The Intent that started this activity
