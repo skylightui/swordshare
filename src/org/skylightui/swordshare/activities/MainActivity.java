@@ -48,7 +48,7 @@ public class MainActivity extends Activity
     private void showPreferences() {
         // Set the preferences
         SharedPreferences settings = getSharedPreferences("SWORDShare", Context.MODE_PRIVATE);
-        String name = settings.getString("name", "");
+        String name = settings.getString("name", "Unknown");
         String username = settings.getString("username", "Unknown");
         String url = settings.getString("url", "Unknown");
         TextView tvName = (TextView)this.findViewById(R.id.name);

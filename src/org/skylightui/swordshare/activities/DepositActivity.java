@@ -3,6 +3,7 @@ package org.skylightui.swordshare.activities;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +25,13 @@ public class DepositActivity extends Activity {
 
     TextView title;
     TextView description;
+
     Intent i;
+
+    String name;
+    String username;
+    String password;
+    String url;
 
     /** The debugging tag */
     private static final String TAG = "org.skylightui.swordshare.activities.DepositActivity";
@@ -52,6 +59,20 @@ public class DepositActivity extends Activity {
         ImageView image = (ImageView)findViewById(R.id.image);
         image.setImageURI(uri);
 
+        // Load the preferences
+        SharedPreferences settings = getSharedPreferences("SWORDShare", Context.MODE_PRIVATE);
+        name = settings.getString("name", "");
+        username = settings.getString("username", "");
+        password = settings.getString("password", "");
+        url = settings.getString("url", "");
+
+        // Check there is at least a URL
+        if ((url == null) || ("".equals(url.trim()))) {
+            Toast toast = Toast.makeText(getApplicationContext(), "No URL set - please visit settings page!", Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        }
+
         title = (TextView)this.findViewById(R.id.title);
         description = (TextView)this.findViewById(R.id.description);
 
@@ -61,6 +82,8 @@ public class DepositActivity extends Activity {
                 try {
                     // Get the context
                     Context context = getApplicationContext();
+
+
 
                     // Check the boxes are filled in
                     CharSequence text = "";
@@ -85,7 +108,7 @@ public class DepositActivity extends Activity {
                     FileOutputStream fosmets = openFileOutput("mets.xml", Context.MODE_PRIVATE);
 
                     Hashtable<String, String> metadata = new Hashtable<String, String>();
-                    metadata.put("creator", "Lewis, Stuart");
+                    metadata.put("creator", name);
                     metadata.put("title", title.getText().toString());
                     metadata.put("description", description.getText().toString());
 
@@ -101,13 +124,15 @@ public class DepositActivity extends Activity {
 
                     Log.d(TAG, "About to call deposit");
                     FileInputStream fispackage = openFileInput("package.zip");
-                    deposit.deposit(fispackage, "http://192.168.2.247:8080/sword/deposit/123456789/766", "sword@swordapp.org", "sword");
+                    deposit.deposit(fispackage, url, username, password);
                     String url = deposit.getURL();
                     Log.d(TAG, "identifier = " + url);
                     setContentView(R.layout.deposit);
                     TextView turl = (TextView)findViewById(R.id.url);
                     turl.setText("URL: " + url);
                 } catch (Exception e) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Error with deposit - " + e.getMessage(), Toast.LENGTH_SHORT);
+                    toast.show();
                     StackTraceLogger.getStackTraceString(e, TAG);
                 }
             }

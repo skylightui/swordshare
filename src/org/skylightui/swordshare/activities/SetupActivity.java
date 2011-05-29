@@ -68,7 +68,7 @@ public class SetupActivity extends Activity {
                 editor.commit();
 
                 // Say we've updated the settings
-                Toast toast = Toast.makeText(getApplicationContext(), "Settings saved: " + settings.getString("name", ""), Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getApplicationContext(), "Settings saved", Toast.LENGTH_SHORT);
                 toast.show();
 
                 // Now close the activity
