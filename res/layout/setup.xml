@@ -16,6 +16,21 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         />
 
     <TextView
+        android:id="@+id/namelabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name:"
+        />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:inputType="textCapWords"
+        />
+
+    <TextView
         android:id="@+id/usernamelabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -27,6 +42,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:inputType="textEmailAddress"
         />
 
     <TextView
@@ -42,6 +58,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:inputType="text"
         />
 
     <TextView
@@ -56,6 +73,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:inputType="textUri"
         android:text="http://"
         />
 
