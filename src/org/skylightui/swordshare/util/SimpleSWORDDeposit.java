@@ -174,7 +174,6 @@ public class SimpleSWORDDeposit {
         .append("                            epdcx:vesURI=\"http://purl.org/dc/terms/RFC3066\">\n")
         .append("                            <epdcx:valueString>en</epdcx:valueString>\n")
         .append("                        </epdcx:statement>\n")
-        .append("                        </epdcx:statement>\n")
         .append("                    </epdcx:description>\n")
         .append("                </epdcx:descriptionSet>\n")
         .append("            </xmlData>\n")
