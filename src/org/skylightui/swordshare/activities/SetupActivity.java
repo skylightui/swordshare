@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.apache.http.protocol.HTTP;
 import org.skylightui.swordshare.R;
 
 public class SetupActivity extends Activity {
@@ -35,11 +36,14 @@ public class SetupActivity extends Activity {
         thisActivity = this;
 
         // Load the preferences
-        settings = getPreferences(Context.MODE_PRIVATE);
+        settings = getSharedPreferences("SWORDShare", Context.MODE_PRIVATE);
         String name = settings.getString("name", "");
         String username = settings.getString("username", "");
         String password = settings.getString("password", "");
-        String url = settings.getString("url", "http://");
+        String url = settings.getString("url", "");
+        if ((url == null) || ("".equals(url.trim()))) {
+            url = "http://";
+        }
 
         // Display the preferences
         tvName = (TextView)this.findViewById(R.id.name);
@@ -64,7 +68,7 @@ public class SetupActivity extends Activity {
                 editor.commit();
 
                 // Say we've updated the settings
-                Toast toast = Toast.makeText(getApplicationContext(), "Settings saved", Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getApplicationContext(), "Settings saved: " + settings.getString("name", ""), Toast.LENGTH_SHORT);
                 toast.show();
 
                 // Now close the activity
