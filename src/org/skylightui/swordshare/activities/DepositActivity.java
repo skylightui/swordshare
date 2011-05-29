@@ -32,6 +32,7 @@ public class DepositActivity extends Activity {
     String username;
     String password;
     String url;
+    String resultUrl;
 
     /** The debugging tag */
     private static final String TAG = "org.skylightui.swordshare.activities.DepositActivity";
@@ -83,8 +84,6 @@ public class DepositActivity extends Activity {
                     // Get the context
                     Context context = getApplicationContext();
 
-
-
                     // Check the boxes are filled in
                     CharSequence text = "";
                     if (("".equals(title.getText().toString().trim())) &&
@@ -125,7 +124,7 @@ public class DepositActivity extends Activity {
                     Log.d(TAG, "About to call deposit");
                     FileInputStream fispackage = openFileInput("package.zip");
                     deposit.deposit(fispackage, url, username, password);
-                    String resultUrl = deposit.getURL();
+                    resultUrl = deposit.getURL();
                     Log.d(TAG, "identifier = " + url);
 
                     // Show the deposit receipt page
@@ -141,7 +140,14 @@ public class DepositActivity extends Activity {
                     ImageView image = (ImageView)findViewById(R.id.image);
                     image.setImageURI(uri);
 
-
+                    // Let the button press take the user to the deposit page
+                    Button visiturl = (Button)findViewById(R.id.visiturlbutton);
+                    visiturl.setOnClickListener(new View.OnClickListener() {
+                        public void onClick(View v) {
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(resultUrl));
+                            startActivity(i);
+                        }});
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(getApplicationContext(), "Error with deposit - " + e.getMessage(), Toast.LENGTH_SHORT);
                     toast.show();
