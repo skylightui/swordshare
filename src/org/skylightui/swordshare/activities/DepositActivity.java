@@ -125,11 +125,23 @@ public class DepositActivity extends Activity {
                     Log.d(TAG, "About to call deposit");
                     FileInputStream fispackage = openFileInput("package.zip");
                     deposit.deposit(fispackage, url, username, password);
-                    String url = deposit.getURL();
+                    String resultUrl = deposit.getURL();
                     Log.d(TAG, "identifier = " + url);
+
+                    // Show the deposit receipt page
                     setContentView(R.layout.deposit);
+
+                    // Set the URL
                     TextView turl = (TextView)findViewById(R.id.url);
-                    turl.setText("URL: " + url);
+                    resultUrl = resultUrl.replace("http://hdl.handle.net/", url.substring(0, url.indexOf("123456789")));
+                    resultUrl = resultUrl.replace("sword/deposit", "jspui/handle");
+                    turl.setText("URL: " + resultUrl);
+
+                    // Set the image
+                    ImageView image = (ImageView)findViewById(R.id.image);
+                    image.setImageURI(uri);
+
+
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(getApplicationContext(), "Error with deposit - " + e.getMessage(), Toast.LENGTH_SHORT);
                     toast.show();
