@@ -1,6 +1,7 @@
 package org.skylightui.swordshare.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,7 +28,11 @@ public class DepositActivity extends Activity {
     TextView title;
     TextView description;
 
+    ProgressDialog dialog;
+
     Button button;
+
+    Context context;
 
     Intent i;
 
@@ -47,13 +52,14 @@ public class DepositActivity extends Activity {
         setContentView(R.layout.describe);
         Uri uri = null;
 
+        context = this;
+
         // The Intent that started this activity
         i = this.getIntent();
 
         // Is the Intent an action being sent from somewhere else?
         if ((i.getAction() != null) && (i.getAction().equals(Intent.ACTION_SEND))) {
             try {
-                Context context = getApplicationContext();
                 // Retrieve the Uri of the file being referenced
                 uri = (Uri)i.getExtras().get(Intent.EXTRA_STREAM);
 
@@ -87,6 +93,7 @@ public class DepositActivity extends Activity {
             public void onClick(View v) {
                 button.setText("Please wait...");
                 button.setEnabled(false);
+                dialog = ProgressDialog.show(context, "", "Depositing file. Please wait...", true);
                 new DepositTask().execute();
         }});
     }
@@ -141,6 +148,7 @@ public class DepositActivity extends Activity {
                 resultUrl = deposit.getURL();
                 Log.d(TAG, "identifier = " + url);
             } catch (Exception e) {
+                dialog.dismiss();
                 Toast toast = Toast.makeText(getApplicationContext(), "Error with deposit - " + e.getMessage(), Toast.LENGTH_SHORT);
                 toast.show();
                 StackTraceLogger.getStackTraceString(e, TAG);
@@ -149,7 +157,10 @@ public class DepositActivity extends Activity {
         }
 
          protected void onPostExecute(String result) {
-             // Show the deposit receipt page
+             // Kills the dialog
+             dialog.dismiss();
+
+            // Show the deposit receipt page
             setContentView(R.layout.deposit);
 
             // Set the URL
