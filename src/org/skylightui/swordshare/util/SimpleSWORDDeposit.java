@@ -60,11 +60,12 @@ public class SimpleSWORDDeposit {
 
     public boolean deposit(InputStream fis, String theUrl, String username, String password) throws Exception {
         // Setup the http connection
+        Log.d(TAG, "Setting up the HTTP connection: " + theUrl);
         int bytesRead, bytesAvailable, bufferSize;
         byte[] buffer;
         int maxBufferSize = 1024 * 1024;
         URL url = new URL(theUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
         conn.setDoInput(true);
         conn.setDoOutput(true);
         conn.setUseCaches(false);
@@ -80,6 +81,7 @@ public class SimpleSWORDDeposit {
         conn.setRequestProperty("X-Packaging", "http://purl.org/net/sword-types/METSDSpaceSIP");
 
         // Send the file
+        Log.d(TAG, "Sending file:");
         DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
         bytesAvailable = fis.available();
         bufferSize = Math.min(bytesAvailable, maxBufferSize);
@@ -93,6 +95,7 @@ public class SimpleSWORDDeposit {
         }
 
         // Get the response from the server
+        Log.d(TAG, "Received response from server: " + conn.getResponseCode());
         int serverResponseCode = conn.getResponseCode();
         fis.close();
         dos.flush();
