@@ -91,20 +91,6 @@ public class DepositActivity extends Activity {
         button = (Button)this.findViewById(R.id.depositbutton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                button.setText("Please wait...");
-                button.setEnabled(false);
-                dialog = ProgressDialog.show(context, "", "Depositing file. Please wait...", true);
-                new DepositTask().execute();
-        }});
-    }
-
-
-    private class DepositTask extends AsyncTask<String, Void, String> {
-        protected String doInBackground(String... urls) {
-            try {
-                // Get the context
-                Context context = getApplicationContext();
-
                 // Check the boxes are filled in
                 CharSequence text = "";
                 if (("".equals(title.getText().toString().trim())) &&
@@ -118,8 +104,20 @@ public class DepositActivity extends Activity {
                 if (text.length() > 0) {
                     Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
                     toast.show();
-                    return "";
+                } else {
+                    button.setText("Please wait...");
+                    button.setEnabled(false);
+                    dialog = ProgressDialog.show(context, "", "Depositing file. Please wait...", true);
+                    new DepositTask().execute();
                 }
+        }});
+    }
+
+    private class DepositTask extends AsyncTask<String, Void, String> {
+        protected String doInBackground(String... urls) {
+            try {
+                // Get the context
+                Context context = getApplicationContext();
 
                 // Retrieve the Uri of the file being referenced
                 uri = (Uri)i.getExtras().get(Intent.EXTRA_STREAM);
