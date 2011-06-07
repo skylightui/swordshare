@@ -15,6 +15,9 @@ public class SimpleSWORDDeposit {
     /** The XML atom entry response */
     private String xml;
 
+    /** The deposit HTTP response code */
+    private Integer serverResponseCode;
+
     /** The debugging tag */
     private static final String TAG = "org.skylightui.swordshare.util.SimpleSWORDDeposit";
 
@@ -58,7 +61,7 @@ public class SimpleSWORDDeposit {
         zip.close();
     }
 
-    public boolean deposit(InputStream fis, String theUrl, String username, String password) throws Exception {
+    public Integer deposit(InputStream fis, String theUrl, String username, String password) throws Exception {
         // Setup the http connection
         Log.d(TAG, "Setting up the HTTP connection: " + theUrl);
         int bytesRead, bytesAvailable, bufferSize;
@@ -96,28 +99,39 @@ public class SimpleSWORDDeposit {
 
         // Get the response from the server
         Log.d(TAG, "Received response from server: " + conn.getResponseCode());
-        int serverResponseCode = conn.getResponseCode();
+        serverResponseCode = conn.getResponseCode();
         fis.close();
-        dos.flush();
-        dos.close();
-        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line;
-        String atom = "";
-        while ((line = rd.readLine()) != null) {
-            atom += line + "\n";
+        try {
+            dos.flush();
+            dos.close();
+        } catch (Exception e) {
+            // Ignore
         }
-        rd.close();
+        InputStreamReader respis = new InputStreamReader(conn.getInputStream());
+        if (respis != null) {
+            BufferedReader rd = new BufferedReader(respis);
+            String line;
+            String atom = "";
+            while ((line = rd.readLine()) != null) {
+                atom += line + "\n";
+            }
+            rd.close();
 
-        xml = atom;
+            xml = atom;
+        }
 
-        // Return whether it completed OK or not
-        return ((serverResponseCode >= 200) && (serverResponseCode < 300));
+        // Return the HTTP status code
+        return serverResponseCode;
     }
 
     public String getURL() {
         String id = xml.substring(xml.indexOf("<atom:id>") + 9);
         id = id.substring(0, id.indexOf('<'));
         return id;
+    }
+
+    public Integer getServerResponseCode() {
+        return serverResponseCode;
     }
 
     private String makeMets(String filename, String mime, Hashtable<String, String> metadata) {

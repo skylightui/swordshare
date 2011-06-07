@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -115,6 +116,7 @@ public class DepositActivity extends Activity {
 
     private class DepositTask extends AsyncTask<String, Void, String> {
         protected String doInBackground(String... urls) {
+            SimpleSWORDDeposit deposit = null;
             try {
                 // Get the context
                 Context context = getApplicationContext();
@@ -131,7 +133,7 @@ public class DepositActivity extends Activity {
                 metadata.put("description", description.getText().toString());
 
                 Log.d(TAG, "About to initiate deposit");
-                SimpleSWORDDeposit deposit = new SimpleSWORDDeposit(filename, i.getType(), metadata, fosmets);
+                deposit = new SimpleSWORDDeposit(filename, i.getType(), metadata, fosmets);
 
                 InputStream content = context.getContentResolver().openInputStream(uri);
 
@@ -142,14 +144,28 @@ public class DepositActivity extends Activity {
 
                 Log.d(TAG, "About to call deposit");
                 FileInputStream fispackage = openFileInput("package.zip");
-                deposit.deposit(fispackage, url, username, password);
-                resultUrl = deposit.getURL();
-                Log.d(TAG, "identifier = " + url);
+                Integer code = deposit.deposit(fispackage, url, username, password);
+                if (code != null) {
+                    if ((code >= 200) || (code < 300)) {
+                        resultUrl = deposit.getURL();
+                        Log.d(TAG, "identifier = " + url);
+                    } else {
+                        resultUrl = "Error with deposit: HTTP code " + code;
+                    }
+                } else {
+
+                }
             } catch (Exception e) {
-                dialog.dismiss();
-                Toast toast = Toast.makeText(getApplicationContext(), "Error with deposit - " + e.getMessage(), Toast.LENGTH_SHORT);
-                toast.show();
+                //dialog.dismiss();
+                //Toast toast = Toast.makeText(getApplicationContext(), "Error with deposit - " + e.getMessage(), Toast.LENGTH_SHORT);
+                //toast.show();
                 StackTraceLogger.getStackTraceString(e, TAG);
+                if ((deposit != null) && (deposit.getServerResponseCode() != null)) {
+                    Integer code = deposit.getServerResponseCode();
+                    resultUrl = "Error with deposit: HTTP code " + code;
+                } else {
+                    resultUrl = "Error with deposit: Unknown";
+                }
             }
             return "";
         }
@@ -158,27 +174,40 @@ public class DepositActivity extends Activity {
              // Kills the dialog
              dialog.dismiss();
 
-            // Show the deposit receipt page
-            setContentView(R.layout.deposit);
+             // Show the deposit receipt page
+             setContentView(R.layout.deposit);
 
-            // Set the URL
-            TextView turl = (TextView)findViewById(R.id.url);
-            resultUrl = resultUrl.replace("http://hdl.handle.net/", url.substring(0, url.indexOf("123456789")));
-            resultUrl = resultUrl.replace("sword/deposit", "jspui/handle");
-            turl.setText("URL: " + resultUrl);
+             // Let the button press take the user to the deposit page
+             Button visiturl = (Button)findViewById(R.id.visiturlbutton);
+             visiturl.setOnClickListener(new View.OnClickListener() {
+                 public void onClick(View v) {
+                     Intent i = new Intent(Intent.ACTION_VIEW);
+                     i.setData(Uri.parse(resultUrl));
+                     startActivity(i);
+                 }
+             });
 
-            // Set the image
-            ImageView image = (ImageView)findViewById(R.id.image);
-            image.setImageURI(uri);
+             // Set the URL
+             TextView turl = (TextView)findViewById(R.id.url);
+             TextView header = (TextView)findViewById(R.id.title);
+             if (resultUrl == null) {
+                 resultUrl = "An error occurred with your deposit!";
+                 visiturl.setEnabled(false);
+                 header.setText("Error!");
+                 header.setTextColor(Color.RED);
+             } else if (resultUrl.startsWith("Error with deposit: ")) {
+                visiturl.setEnabled(false);
+                 header.setText("Error!");
+                 header.setTextColor(Color.RED);
+             } else {
+                 resultUrl = resultUrl.replace("http://hdl.handle.net/", url.substring(0, url.indexOf("123456789")));
+                 resultUrl = resultUrl.replace("sword/deposit", "jspui/handle");
+             }
+             turl.setText("URL: " + resultUrl);
 
-            // Let the button press take the user to the deposit page
-            Button visiturl = (Button)findViewById(R.id.visiturlbutton);
-            visiturl.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(resultUrl));
-                    startActivity(i);
-                }});
+             // Set the image
+             ImageView image = (ImageView)findViewById(R.id.image);
+             image.setImageURI(uri);
          }
     }
 }
