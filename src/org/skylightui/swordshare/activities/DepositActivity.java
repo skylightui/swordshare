@@ -200,8 +200,12 @@ public class DepositActivity extends Activity {
                  header.setText("Error!");
                  header.setTextColor(Color.RED);
              } else {
-                 resultUrl = resultUrl.replace("http://hdl.handle.net/", url.substring(0, url.indexOf("123456789")));
-                 resultUrl = resultUrl.replace("sword/deposit", "jspui/handle");
+                 if (resultUrl.contains("123456789")) {
+                     resultUrl = resultUrl.replace("http://hdl.handle.net/", url.substring(0, url.indexOf("123456789")));
+                     resultUrl = resultUrl.replace("sword/deposit", "jspui/handle");
+                 } else if (!resultUrl.startsWith("http://")) {
+                     resultUrl = url.substring(0, url.indexOf("/", 8) + 1) + resultUrl + "/";
+                 }
              }
              turl.setText("URL: " + resultUrl);
 
