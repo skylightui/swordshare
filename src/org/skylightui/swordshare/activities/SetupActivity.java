@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import org.apache.http.protocol.HTTP;
 import org.skylightui.swordshare.R;
 
 public class SetupActivity extends Activity {

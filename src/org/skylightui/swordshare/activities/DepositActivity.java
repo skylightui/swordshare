@@ -132,23 +132,23 @@ public class DepositActivity extends Activity {
                 metadata.put("title", title.getText().toString());
                 metadata.put("description", description.getText().toString());
 
-                Log.d(TAG, "About to initiate deposit");
+                if (MainActivity.debug) Log.d(TAG, "About to initiate deposit");
                 deposit = new SimpleSWORDDeposit(filename, i.getType(), metadata, fosmets);
 
                 InputStream content = context.getContentResolver().openInputStream(uri);
 
-                Log.d(TAG, "About to call makePackage");
+                if (MainActivity.debug) Log.d(TAG, "About to call makePackage");
                 FileOutputStream foszip = openFileOutput("package.zip", Context.MODE_PRIVATE);
                 FileInputStream fismets = openFileInput("mets.xml");
                 deposit.makePackage(content, uri.toString(), foszip, fismets);
 
-                Log.d(TAG, "About to call deposit");
+                if (MainActivity.debug) Log.d(TAG, "About to call deposit");
                 FileInputStream fispackage = openFileInput("package.zip");
                 Integer code = deposit.deposit(fispackage, url, username, password);
                 if (code != null) {
                     if ((code >= 200) || (code < 300)) {
                         resultUrl = deposit.getURL();
-                        Log.d(TAG, "identifier = " + url);
+                        if (MainActivity.debug) Log.d(TAG, "identifier = " + url);
                     } else {
                         resultUrl = "Error with deposit: HTTP code " + code;
                     }

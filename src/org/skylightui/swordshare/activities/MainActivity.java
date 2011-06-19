@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +18,9 @@ public class MainActivity extends Activity
 
     /** The debugging tag */
     private static final String TAG = "org.skylightui.swordshare.activities.MainActivity";
+
+    /** Global debug setting */
+    public static final boolean debug = false;
 
     /** Called when the activity is first created. */
     @Override
