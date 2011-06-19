@@ -1,87 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout
-android:id="@+id/widget32"
-android:layout_width="fill_parent"
-android:layout_height="fill_parent"
-android:orientation="vertical"
-xmlns:android="http://schemas.android.com/apk/res/android"
->
+<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffffff"
+    android:padding="10sp"
+    >
 
-    <TextView
-        android:id="@+id/introduction"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Please configure your SWORD settings:"
-        android:textStyle="bold"
-        />
+    <TableLayout
+        android:id="@+id/widget32"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        >
 
-    <TextView
-        android:id="@+id/namelabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name:"
-        />
+        <TextView
+            android:id="@+id/introduction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please configure your SWORD settings:"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            />
 
-    <EditText
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:inputType="textCapWords"
-        />
+        <TextView
+            android:id="@+id/namelabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name:"
+            android:textColor="#000000"
+            />
 
-    <TextView
-        android:id="@+id/usernamelabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Username:"
-        />
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:inputType="textCapWords"
+            />
 
-    <EditText
-        android:id="@+id/username"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:inputType="textEmailAddress"
-        />
+        <TextView
+            android:id="@+id/usernamelabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username:"
+            android:textColor="#000000"
+            />
 
-    <TextView
-        android:id="@+id/passwordlabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Password:"
-        />
+        <EditText
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:inputType="textEmailAddress"
+            />
 
-    <EditText
-        android:id="@+id/password"
-        android:password="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:inputType="text"
-        />
+        <TextView
+            android:id="@+id/passwordlabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Password:"
+            android:textColor="#000000"
+            />
 
-    <TextView
-        android:id="@+id/urllabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Deposit URL:"
-        />
+        <EditText
+            android:id="@+id/password"
+            android:password="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:inputType="text"
+            />
 
-    <EditText
-        android:id="@+id/url"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:inputType="textUri"
-        android:text="http://"
-        />
+        <TextView
+            android:id="@+id/urllabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Deposit URL:"
+            android:textColor="#000000"
+            />
 
-    <Button
-        android:id="@+id/donebutton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Done"
-        />
+        <EditText
+            android:id="@+id/url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:inputType="textUri"
+            android:text="http://"
+            />
 
-</TableLayout>
+        <Button
+            android:id="@+id/donebutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Done"
+            android:layout_margin="20sp"
+            />
+
+    </TableLayout>
+
+</ScrollView>
