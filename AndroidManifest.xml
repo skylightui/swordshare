@@ -4,7 +4,6 @@
       android:versionCode="1"
       android:versionName="1.0">
 
-    <uses-permission android:name="android.permission.READ_OWNER_DATA"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application android:label="swordshare" android:icon="@drawable/icon">
